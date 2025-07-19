@@ -66,11 +66,11 @@ GLuint nvglImageHandleGL2(NVGcontext* ctx, int image);
 
 #if defined NANOVG_GL3
 
-NVGcontext* nvgCreateGL3(int flags);
-void nvgDeleteGL3(NVGcontext* ctx);
+NVG_EXPORT NVGcontext* nvgCreateGL3(int flags);
+NVG_EXPORT void nvgDeleteGL3(NVGcontext* ctx);
 
-int nvglCreateImageFromHandleGL3(NVGcontext* ctx, GLuint textureId, int w, int h, int flags);
-GLuint nvglImageHandleGL3(NVGcontext* ctx, int image);
+NVG_EXPORT int nvglCreateImageFromHandleGL3(NVGcontext* ctx, GLuint textureId, int w, int h, int flags);
+NVG_EXPORT GLuint nvglImageHandleGL3(NVGcontext* ctx, int image);
 
 #endif
 
@@ -1025,10 +1025,10 @@ static void glnvg__fill(GLNVGcontext* gl, GLNVGcall* call)
 
 	glStencilOpSeparate(GL_FRONT, GL_KEEP, GL_KEEP, GL_INCR_WRAP);
 	glStencilOpSeparate(GL_BACK, GL_KEEP, GL_KEEP, GL_DECR_WRAP);
-	glDisable(GL_CULL_FACE);
+	//glDisable(GL_CULL_FACE);
 	for (i = 0; i < npaths; i++)
 		glDrawArrays(GL_TRIANGLE_FAN, paths[i].fillOffset, paths[i].fillCount);
-	glEnable(GL_CULL_FACE);
+	//glEnable(GL_CULL_FACE);
 
 	// Draw anti-aliased pixels
 	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
@@ -1186,7 +1186,8 @@ static void glnvg__renderFlush(void* uptr)
 		// Setup require GL state.
 		glUseProgram(gl->shader.prog);
 
-		glEnable(GL_CULL_FACE);
+		//glEnable(GL_CULL_FACE);
+		glDisable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		glFrontFace(GL_CCW);
 		glEnable(GL_BLEND);
@@ -1253,7 +1254,7 @@ static void glnvg__renderFlush(void* uptr)
 #if defined NANOVG_GL3
 		glBindVertexArray(0);
 #endif
-		glDisable(GL_CULL_FACE);
+		//glDisable(GL_CULL_FACE);
 			glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glUseProgram(0);
 		glnvg__bindTexture(gl, 0);
