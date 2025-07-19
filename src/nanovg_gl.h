@@ -72,6 +72,7 @@ NVG_EXPORT void nvgDeleteGL3(NVGcontext* ctx);
 NVG_EXPORT int nvglCreateImageFromHandleGL3(NVGcontext* ctx, GLuint textureId, int w, int h, int flags);
 NVG_EXPORT GLuint nvglImageHandleGL3(NVGcontext* ctx, int image);
 
+
 #endif
 
 #if defined NANOVG_GLES2
@@ -274,7 +275,23 @@ struct GLNVGcontext {
 typedef struct GLNVGcontext GLNVGcontext;
 
 static int glnvg__maxi(int a, int b) { return a > b ? a : b; }
+extern void glnvg__throw_exception(int iGlError);
+inline static void glnvg__check_error()
+{
+	int iHasGlError = glGetError();
+	if (iHasGlError)
+	{
+		if (iHasGlError == GL_INVALID_OPERATION)
+		{
+			glnvg__throw_exception(iHasGlError);
+		}
+		else
+		{
 
+			glnvg__throw_exception(iHasGlError);
+		}
+	}
+}
 #ifdef NANOVG_GLES2
 static unsigned int glnvg__nearestPow2(unsigned int num)
 {
@@ -295,6 +312,7 @@ static void glnvg__bindTexture(GLNVGcontext* gl, GLuint tex)
 	if (gl->boundTexture != tex) {
 		gl->boundTexture = tex;
 		glBindTexture(GL_TEXTURE_2D, tex);
+		glnvg__check_error();
 	}
 #else
 	glBindTexture(GL_TEXTURE_2D, tex);
@@ -836,11 +854,15 @@ static int glnvg__renderUpdateTexture(void* uptr, int image, int x, int y, int w
 	glnvg__bindTexture(gl, tex->tex);
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT,1);
+	glnvg__check_error();
 
 #ifndef NANOVG_GLES2
 	glPixelStorei(GL_UNPACK_ROW_LENGTH, tex->width);
+	glnvg__check_error();
 	glPixelStorei(GL_UNPACK_SKIP_PIXELS, x);
+	glnvg__check_error();
 	glPixelStorei(GL_UNPACK_SKIP_ROWS, y);
+	glnvg__check_error();
 #else
 	// No support for all of skip, need to update a whole row at a time.
 	if (tex->type == NVG_TEXTURE_RGBA)
@@ -852,19 +874,30 @@ static int glnvg__renderUpdateTexture(void* uptr, int image, int x, int y, int w
 #endif
 
 	if (tex->type == NVG_TEXTURE_RGBA)
-		glTexSubImage2D(GL_TEXTURE_2D, 0, x,y, w,h, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	{
+		glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glnvg__check_error();
+	}
 	else
+	{
 #if defined(NANOVG_GLES2) || defined(NANOVG_GL2)
-		glTexSubImage2D(GL_TEXTURE_2D, 0, x,y, w,h, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
+		glnvg__check_error();
 #else
-		glTexSubImage2D(GL_TEXTURE_2D, 0, x,y, w,h, GL_RED, GL_UNSIGNED_BYTE, data);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, x, y, w, h, GL_RED, GL_UNSIGNED_BYTE, data);
+		glnvg__check_error();
 #endif
+	}
 
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+	glnvg__check_error();
 #ifndef NANOVG_GLES2
 	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+	glnvg__check_error();
 	glPixelStorei(GL_UNPACK_SKIP_PIXELS, 0);
+	glnvg__check_error();
 	glPixelStorei(GL_UNPACK_SKIP_ROWS, 0);
+	glnvg__check_error();
 #endif
 
 	glnvg__bindTexture(gl, 0);

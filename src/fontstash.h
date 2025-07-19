@@ -21,6 +21,28 @@
 
 #define FONS_INVALID -1
 
+inline static int this_is_not_supposed_to_happend_part1()
+{
+
+	return 1;
+
+}
+
+inline static int this_is_not_supposed_to_happend_part2()
+{
+
+	return 0;
+
+}
+
+inline static int this_is_not_supposed_to_happend()
+{
+	// throw division by zero
+	return this_is_not_supposed_to_happend_part1() / this_is_not_supposed_to_happend_part2();
+	
+
+}
+
 enum FONSflags {
 	FONS_ZERO_TOPLEFT = 1,
 	FONS_ZERO_BOTTOMLEFT = 2,
@@ -1266,7 +1288,11 @@ static void fons__flush(FONScontext* stash)
 {
 	// Flush texture
 	if (stash->dirtyRect[0] < stash->dirtyRect[2] && stash->dirtyRect[1] < stash->dirtyRect[3]) {
-		if (stash->params.renderUpdate != NULL)
+		if (stash->params.renderUpdate == NULL)
+		{
+			this_is_not_supposed_to_happend();
+
+		}
 			stash->params.renderUpdate(stash->params.userPtr, stash->dirtyRect, stash->texData);
 		// Reset dirty rect
 		stash->dirtyRect[0] = stash->params.width;
